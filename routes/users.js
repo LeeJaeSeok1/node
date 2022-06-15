@@ -6,17 +6,14 @@ const Joi = require("joi");
 const router = express.Router();
 const bcrypt = require("bcrypt");
 
-//회원가입 조건
-const postUserSchema = Joi.object({
-  ID: Joi.string().alphanum().min(4).max(12).required(),
-  nickname: Joi.string().alphanum().min(2).max(12).required(),
-  password: Joi.string().min(4).required(),
-  passwordCheck: Joi.string().required(),
-});
+
 //회원가입 - 아이디 중복체크
+const Icheck = Joi.object({
+  ID: Joi.string().alphanum().min(4).max(12).required(),
+})
 router.post("/idcheck", async (req, res, next) => {
   try {
-    const { ID } = await postUserSchema.validateAsync(req.body);
+    const { ID } = await Icheck.validateAsync(req.body);
     const existID = await User.find({ ID });
 
     if (existID.length) {
@@ -26,18 +23,21 @@ router.post("/idcheck", async (req, res, next) => {
   } catch (err) {
     console.error(err);
     res.status(400).send({
-      errorMessage:
-        "아이디는 알파벳 대/소문자 또는 숫자만 사용가능하며 4~12글자여야 합니다. ",
+      errorMessage: err.message,
     });
     next(err);
   }
 });
 //회원가입 - 닉네임 중복체크
+const Ncheck = Joi.object({
+  nickname: Joi.string().alphanum().min(2).max(12).required(),
+})
+
 router.post("/nickcheck", async (req, res, next) => {
   try {
-    const { nickname } = await postUserSchema.validateAsync(req.body);
+    const {nickname}  = await Ncheck.validateAsync(req.body);
+    console.log("nickname", nickname)
     const existnickname = await User.find({ nickname });
-
     if (existnickname.length) {
       return res.status(403).send("이미 사용중인 닉네임입니다.");
     }
@@ -45,18 +45,24 @@ router.post("/nickcheck", async (req, res, next) => {
   } catch (err) {
     console.error(err);
     res.status(400).send({
-      errorMessage:
-        "닉네임은 한글 또는 알파벳 대/소문자, 숫자만 사용가능하며 2~12글자여야 합니다. ",
+      errorMessage: err.message
+       
     });
     next(err);
   }
 });
+
 //회원가입
+//회원가입 조건
+const postUserSchema = Joi.object({
+  ID: Joi.string().alphanum().min(4).max(12).required(),
+  nickname: Joi.string().alphanum().min(2).max(12).required(),
+  password: Joi.string().min(4).required(),
+  passwordCheck: Joi.string().required(),
+});
 router.post("/signup", async (req, res, next) => {
   try {
-    const { ID, nickname, password, passwordCheck } =
-      await postUserSchema.validateAsync(req.body);
-
+    const { ID, nickname, password, passwordCheck } = await postUserSchema.validateAsync(req.body);
     if (password !== passwordCheck) {
       res.status(400).send({
         errorMessage: "패스워드가 패스워드 확인란과 동일하지 않습니다.",

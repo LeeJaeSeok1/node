@@ -10,6 +10,13 @@ const postsRouter = require("./routes/posts");
 const usersRouter = require("./routes/users");
 const commentsRouter = require("./routes/comments");
 
+
+// 스웨거
+const swaggerUi = require("swagger-ui-express");
+const swaggerFile = require("./swagger-output");
+
+
+app.use("/swagger", swaggerUi.serve, swaggerUi.setup(swaggerFile));
 //미들웨어
 app.use(express.json());
 app.use(cors());
@@ -24,3 +31,4 @@ app.use(
 app.listen(port, () => {
   console.log("포트로 서버 ON!");
 });
+
